@@ -1,8 +1,22 @@
 "use client"
 
 import { useEffect, useState, useCallback } from "react"
-import { CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  CartesianGrid,
+  ComposedChart,
+  Line,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 
 export default function VoltageCurrentGraph() {
   const [gradient, setGradient] = useState<number | null>(null)
@@ -80,7 +94,7 @@ export default function VoltageCurrentGraph() {
 
   const bestFitLine = generateBestFitLine()
 
-  // Custom dot component with label - fixed with proper error checking
+  // Custom dot component with label and error checking
   const CustomDot = (props: any) => {
     const { cx, cy, payload } = props
 
@@ -93,7 +107,14 @@ export default function VoltageCurrentGraph() {
     return (
       <g>
         <circle cx={cx} cy={cy} r={5} fill="#8884d8" />
-        <text x={cx} y={cy - 10} textAnchor="middle" fill="#666" fontSize="11px" fontWeight="500">
+        <text
+          x={cx}
+          y={cy - 10}
+          textAnchor="middle"
+          fill="#666"
+          fontSize="11px"
+          fontWeight="500"
+        >
           {`(${payload.voltage.toFixed(1)}, ${payload.current.toFixed(2)})`}
         </text>
       </g>
@@ -104,7 +125,9 @@ export default function VoltageCurrentGraph() {
     <Card className="w-full">
       <CardHeader>
         <CardTitle>Voltage vs Current Graph</CardTitle>
-        <CardDescription>Plotting the relationship between voltage (V) and current (A)</CardDescription>
+        <CardDescription>
+          Plotting the relationship between voltage (V) and current (A)
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="h-[450px] w-full">
@@ -176,7 +199,9 @@ export default function VoltageCurrentGraph() {
               </CardHeader>
               <CardContent className="p-4 pt-0">
                 <p className="text-2xl font-bold">
-                  {gradient !== null ? `${(1 / gradient).toFixed(2)} Ω` : "Calculating..."}
+                  {gradient !== null
+                    ? `${(1 / gradient).toFixed(2)} Ω`
+                    : "Calculating..."}
                 </p>
                 <p className="text-sm text-muted-foreground">Resistance = ΔV/ΔI</p>
               </CardContent>
@@ -188,7 +213,9 @@ export default function VoltageCurrentGraph() {
               </CardHeader>
               <CardContent className="p-4 pt-0">
                 <p className="text-2xl font-bold">
-                  {intercept !== null ? `${intercept.toFixed(2)} A` : "Calculating..."}
+                  {intercept !== null
+                    ? `${intercept.toFixed(2)} A`
+                    : "Calculating..."}
                 </p>
               </CardContent>
             </Card>
@@ -198,8 +225,12 @@ export default function VoltageCurrentGraph() {
                 <CardTitle className="text-lg">R² Value</CardTitle>
               </CardHeader>
               <CardContent className="p-4 pt-0">
-                <p className="text-2xl font-bold">{rSquared !== null ? rSquared.toFixed(4) : "Calculating..."}</p>
-                <p className="text-sm text-muted-foreground">Goodness of fit (1.0 = perfect)</p>
+                <p className="text-2xl font-bold">
+                  {rSquared !== null ? rSquared.toFixed(4) : "Calculating..."}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Goodness of fit (1.0 = perfect)
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -207,16 +238,17 @@ export default function VoltageCurrentGraph() {
           <div className="rounded-md bg-muted p-4">
             <h3 className="mb-2 font-semibold">Calculation Method:</h3>
             <p>
-              The gradient is calculated using linear regression across all data points. Since this is a voltage-current
-              relationship, the resistance (R) is given by:
+              The gradient is calculated using linear regression across all data points.
+              Since this is a voltage-current relationship, the resistance (R) is given by:
             </p>
             <p className="mt-2 font-medium">
               R = ΔV/ΔI ={" "}
-              {gradient !== null ? `1/${gradient.toFixed(2)} = ${(1 / gradient).toFixed(2)} Ω` : "calculating..."}
+              {gradient !== null
+                ? `1/${gradient.toFixed(2)} = ${(1 / gradient).toFixed(2)} Ω`
+                : "calculating..."}
             </p>
             <p className="mt-2 text-sm text-muted-foreground">
-              Note: In Ohm's law (V = IR), the gradient of a V-I graph is R, but since we're plotting I vs V, the
-              gradient is 1/R.
+              Note: In Ohm's law (V = IR), the gradient of a V-I graph is R, but since we're plotting I vs V, the gradient is 1/R.
             </p>
           </div>
         </div>
@@ -224,4 +256,3 @@ export default function VoltageCurrentGraph() {
     </Card>
   )
 }
-
