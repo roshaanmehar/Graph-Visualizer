@@ -62,7 +62,7 @@ export default function VoltageCurrentGraph() {
     const rSquared = explainedVariation / totalVariation
 
     return { slope, intercept, rSquared }
-  }, [data])
+  }, [])
 
   // Generate points for the best fit line
   const generateBestFitLine = () => {
@@ -86,9 +86,15 @@ export default function VoltageCurrentGraph() {
 
   const bestFitLine = generateBestFitLine()
 
-  // Custom dot component with label
+  // Custom dot component with label - fixed with proper error checking
   const CustomDot = (props: any) => {
     const { cx, cy, payload } = props
+
+    // Check if payload and required properties exist
+    if (!payload || typeof payload.voltage === "undefined" || typeof payload.current === "undefined") {
+      // Render just a circle without a label if data is missing
+      return <circle cx={cx} cy={cy} r={5} fill="#8884d8" />
+    }
 
     return (
       <g>
