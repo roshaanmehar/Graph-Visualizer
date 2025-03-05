@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState, useCallback } from "react";
 import {
   CartesianGrid,
   ComposedChart,
@@ -9,19 +9,49 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-} from "recharts"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+} from "recharts";
+
+// Simple Card components to replace missing '@/components/ui/card'
+const Card = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => {
+  return (
+    <div className={`card ${className}`} style={{ border: "1px solid #ddd", borderRadius: "8px", padding: "16px", margin: "16px 0" }}>
+      {children}
+    </div>
+  );
+};
+
+const CardHeader = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => {
+  return (
+    <div className={`card-header ${className}`} style={{ marginBottom: "8px" }}>
+      {children}
+    </div>
+  );
+};
+
+const CardTitle = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => {
+  return (
+    <h2 className={`card-title ${className}`} style={{ fontSize: "1.25rem", fontWeight: "bold" }}>
+      {children}
+    </h2>
+  );
+};
+
+const CardDescription = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => {
+  return (
+    <p className={`card-description ${className}`} style={{ fontSize: "1rem", color: "#666" }}>
+      {children}
+    </p>
+  );
+};
+
+const CardContent = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => {
+  return <div className={`card-content ${className}`} style={{ marginTop: "16px" }}>{children}</div>;
+};
 
 export default function VoltageCurrentGraph() {
-  const [gradient, setGradient] = useState<number | null>(null)
-  const [intercept, setIntercept] = useState<number | null>(null)
-  const [rSquared, setRSquared] = useState<number | null>(null)
+  const [gradient, setGradient] = useState<number | null>(null);
+  const [intercept, setIntercept] = useState<number | null>(null);
+  const [rSquared, setRSquared] = useState<number | null>(null);
 
   // Data from the table
   const data = [
@@ -34,105 +64,90 @@ export default function VoltageCurrentGraph() {
     { voltage: 3.0, current: 71.66 },
     { voltage: 3.5, current: 85.0 },
     { voltage: 4.0, current: 95.66 },
-  ]
+  ];
 
   // Function to calculate linear regression
   const calculateLinearRegression = useCallback(() => {
-    const n = data.length
-    let sumX = 0
-    let sumY = 0
-    let sumXY = 0
-    let sumXX = 0
-    let sumYY = 0
+    const n = data.length;
+    let sumX = 0;
+    let sumY = 0;
+    let sumXY = 0;
+    let sumXX = 0;
+    let sumYY = 0;
 
     for (const point of data) {
-      sumX += point.voltage
-      sumY += point.current
-      sumXY += point.voltage * point.current
-      sumXX += point.voltage * point.voltage
-      sumYY += point.current * point.current
+      sumX += point.voltage;
+      sumY += point.current;
+      sumXY += point.voltage * point.current;
+      sumXX += point.voltage * point.voltage;
+      sumYY += point.current * point.current;
     }
 
-    const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX)
-    const intercept = (sumY - slope * sumX) / n
+    const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+    const intercept = (sumY - slope * sumX) / n;
 
     // Calculate R-squared
-    const meanY = sumY / n
-    let totalVariation = 0
-    let explainedVariation = 0
+    const meanY = sumY / n;
+    let totalVariation = 0;
+    let explainedVariation = 0;
 
     for (const point of data) {
-      const predictedY = slope * point.voltage + intercept
-      totalVariation += Math.pow(point.current - meanY, 2)
-      explainedVariation += Math.pow(predictedY - meanY, 2)
+      const predictedY = slope * point.voltage + intercept;
+      totalVariation += Math.pow(point.current - meanY, 2);
+      explainedVariation += Math.pow(predictedY - meanY, 2);
     }
 
-    const rSquared = explainedVariation / totalVariation
+    const rSquared = explainedVariation / totalVariation;
 
-    return { slope, intercept, rSquared }
-  }, [])
+    return { slope, intercept, rSquared };
+  }, [data]);
 
   // Generate points for the best fit line
   const generateBestFitLine = () => {
-    if (gradient === null || intercept === null) return []
-
-    const minVoltage = Math.min(...data.map((d) => d.voltage))
-    const maxVoltage = Math.max(...data.map((d) => d.voltage))
-
+    if (gradient === null || intercept === null) return [];
+    const minVoltage = Math.min(...data.map((d) => d.voltage));
+    const maxVoltage = Math.max(...data.map((d) => d.voltage));
     return [
       { voltage: minVoltage, current: minVoltage * gradient + intercept },
       { voltage: maxVoltage, current: maxVoltage * gradient + intercept },
-    ]
-  }
+    ];
+  };
 
   useEffect(() => {
-    const { slope, intercept, rSquared } = calculateLinearRegression()
-    setGradient(slope)
-    setIntercept(intercept)
-    setRSquared(rSquared)
-  }, [calculateLinearRegression])
+    const { slope, intercept, rSquared } = calculateLinearRegression();
+    setGradient(slope);
+    setIntercept(intercept);
+    setRSquared(rSquared);
+  }, [calculateLinearRegression]);
 
-  const bestFitLine = generateBestFitLine()
+  const bestFitLine = generateBestFitLine();
 
   // Custom dot component with label and error checking
   const CustomDot = (props: any) => {
-    const { cx, cy, payload } = props
-
-    // Check if payload and required properties exist
+    const { cx, cy, payload } = props;
     if (!payload || typeof payload.voltage === "undefined" || typeof payload.current === "undefined") {
-      // Render just a circle without a label if data is missing
-      return <circle cx={cx} cy={cy} r={5} fill="#8884d8" />
+      return <circle cx={cx} cy={cy} r={5} fill="#8884d8" />;
     }
-
     return (
       <g>
         <circle cx={cx} cy={cy} r={5} fill="#8884d8" />
-        <text
-          x={cx}
-          y={cy - 10}
-          textAnchor="middle"
-          fill="#666"
-          fontSize="11px"
-          fontWeight="500"
-        >
+        <text x={cx} y={cy - 10} textAnchor="middle" fill="#666" fontSize="11px" fontWeight="500">
           {`(${payload.voltage.toFixed(1)}, ${payload.current.toFixed(2)})`}
         </text>
       </g>
-    )
-  }
+    );
+  };
 
   return (
     <Card className="w-full">
       <CardHeader>
         <CardTitle>Voltage vs Current Graph</CardTitle>
-        <CardDescription>
-          Plotting the relationship between voltage (V) and current (A)
-        </CardDescription>
+        <CardDescription>Plotting the relationship between voltage (V) and current (A)</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="h-[450px] w-full">
+        <div style={{ height: "450px", width: "100%" }}>
           <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart margin={{ top: 30, right: 30, bottom: 60, left: 70 }}>
+            <ComposedChart data={data} margin={{ top: 30, right: 30, bottom: 60, left: 70 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis
                 type="number"
@@ -154,14 +169,13 @@ export default function VoltageCurrentGraph() {
               <Tooltip
                 formatter={(value, name, props) => {
                   if (name === "current") {
-                    return [`${Number(value).toFixed(2)} A`, "Current"]
+                    return [`${Number(value).toFixed(2)} A`, "Current"];
                   }
-                  return [`${Number(value).toFixed(2)} V`, "Voltage"]
+                  return [`${Number(value).toFixed(2)} V`, "Voltage"];
                 }}
                 labelFormatter={() => ""}
                 cursor={{ strokeDasharray: "3 3" }}
               />
-              {/* Connected line through actual data points */}
               <Line
                 name="Data Line"
                 type="monotone"
@@ -172,7 +186,6 @@ export default function VoltageCurrentGraph() {
                 dot={<CustomDot />}
                 activeDot={{ r: 8, fill: "#8884d8", stroke: "#fff" }}
               />
-              {/* Best fit line */}
               {gradient !== null && intercept !== null && (
                 <Line
                   name="Best Fit Line"
@@ -191,68 +204,60 @@ export default function VoltageCurrentGraph() {
           </ResponsiveContainer>
         </div>
 
-        <div className="mt-8 space-y-6">
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            <Card className="overflow-hidden">
-              <CardHeader className="p-4">
-                <CardTitle className="text-lg">Gradient (Resistance)</CardTitle>
+        <div style={{ marginTop: "32px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "16px" }}>
+            <Card>
+              <CardHeader>
+                <CardTitle>Gradient (Resistance)</CardTitle>
               </CardHeader>
-              <CardContent className="p-4 pt-0">
-                <p className="text-2xl font-bold">
-                  {gradient !== null
-                    ? `${(1 / gradient).toFixed(2)} Ω`
-                    : "Calculating..."}
+              <CardContent>
+                <p style={{ fontSize: "2rem", fontWeight: "bold" }}>
+                  {gradient !== null ? `${(1 / gradient).toFixed(2)} Ω` : "Calculating..."}
                 </p>
-                <p className="text-sm text-muted-foreground">Resistance = ΔV/ΔI</p>
+                <p style={{ fontSize: "0.875rem", color: "#666" }}>Resistance = ΔV/ΔI</p>
               </CardContent>
             </Card>
 
-            <Card className="overflow-hidden">
-              <CardHeader className="p-4">
-                <CardTitle className="text-lg">Y-Intercept</CardTitle>
+            <Card>
+              <CardHeader>
+                <CardTitle>Y-Intercept</CardTitle>
               </CardHeader>
-              <CardContent className="p-4 pt-0">
-                <p className="text-2xl font-bold">
-                  {intercept !== null
-                    ? `${intercept.toFixed(2)} A`
-                    : "Calculating..."}
+              <CardContent>
+                <p style={{ fontSize: "2rem", fontWeight: "bold" }}>
+                  {intercept !== null ? `${intercept.toFixed(2)} A` : "Calculating..."}
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="overflow-hidden">
-              <CardHeader className="p-4">
-                <CardTitle className="text-lg">R² Value</CardTitle>
+            <Card>
+              <CardHeader>
+                <CardTitle>R² Value</CardTitle>
               </CardHeader>
-              <CardContent className="p-4 pt-0">
-                <p className="text-2xl font-bold">
+              <CardContent>
+                <p style={{ fontSize: "2rem", fontWeight: "bold" }}>
                   {rSquared !== null ? rSquared.toFixed(4) : "Calculating..."}
                 </p>
-                <p className="text-sm text-muted-foreground">
-                  Goodness of fit (1.0 = perfect)
-                </p>
+                <p style={{ fontSize: "0.875rem", color: "#666" }}>Goodness of fit (1.0 = perfect)</p>
               </CardContent>
             </Card>
           </div>
 
-          <div className="rounded-md bg-muted p-4">
-            <h3 className="mb-2 font-semibold">Calculation Method:</h3>
+          <div style={{ marginTop: "32px", padding: "16px", backgroundColor: "#f5f5f5", borderRadius: "8px" }}>
+            <h3 style={{ marginBottom: "8px", fontWeight: "bold" }}>Calculation Method:</h3>
             <p>
               The gradient is calculated using linear regression across all data points.
               Since this is a voltage-current relationship, the resistance (R) is given by:
             </p>
-            <p className="mt-2 font-medium">
+            <p style={{ marginTop: "8px", fontWeight: "500" }}>
               R = ΔV/ΔI ={" "}
-              {gradient !== null
-                ? `1/${gradient.toFixed(2)} = ${(1 / gradient).toFixed(2)} Ω`
-                : "calculating..."}
+              {gradient !== null ? `1/${gradient.toFixed(2)} = ${(1 / gradient).toFixed(2)} Ω` : "calculating..."}
             </p>
-            <p className="mt-2 text-sm text-muted-foreground">
+            <p style={{ marginTop: "8px", fontSize: "0.875rem", color: "#666" }}>
               Note: In Ohm's law (V = IR), the gradient of a V-I graph is R, but since we're plotting I vs V, the gradient is 1/R.
             </p>
           </div>
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
