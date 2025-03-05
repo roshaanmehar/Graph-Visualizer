@@ -56,7 +56,7 @@ export default function VoltageCurrentGraph() {
     const rSquared = explainedVariation / totalVariation
 
     return { slope, intercept, rSquared }
-  }, [data])
+  }, [data.length, data])
 
   // Generate points for the best fit line
   const generateBestFitLine = () => {
@@ -89,7 +89,7 @@ export default function VoltageCurrentGraph() {
       <CardContent>
         <div className="h-[400px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart margin={{ top: 20, right: 30, bottom: 60, left: 60 }}>
+            <ComposedChart margin={{ top: 20, right: 30, bottom: 60, left: 70 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis
                 type="number"
@@ -104,8 +104,9 @@ export default function VoltageCurrentGraph() {
                 dataKey="current"
                 name="Current"
                 unit="A"
-                label={{ value: "Current (A)", angle: -90, position: "left", offset: -40 }}
+                label={{ value: "Current (A)", angle: -90, position: "left", offset: -45 }}
                 domain={[0, "dataMax"]}
+                tickFormatter={(value) => value.toFixed(2)}
               />
               <Tooltip
                 formatter={(value, name) => [
