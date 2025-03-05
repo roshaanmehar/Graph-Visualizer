@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
@@ -11,19 +11,19 @@ export default function VoltageCurrentGraph() {
 
   // Data from the table
   const data = [
-    { voltage: 0.0, current: 0 },
+    { voltage: 0.0, current: 0.0 },
     { voltage: 0.5, current: 9.33 },
-    { voltage: 1.0, current: 23 },
+    { voltage: 1.0, current: 23.0 },
     { voltage: 1.5, current: 24.66 },
     { voltage: 2.0, current: 47.66 },
     { voltage: 2.5, current: 60.66 },
     { voltage: 3.0, current: 71.66 },
-    { voltage: 3.5, current: 85 },
+    { voltage: 3.5, current: 85.0 },
     { voltage: 4.0, current: 95.66 },
   ]
 
   // Function to calculate linear regression
-  const calculateLinearRegression = () => {
+  const calculateLinearRegression = useCallback(() => {
     const n = data.length
     let sumX = 0
     let sumY = 0
@@ -56,7 +56,7 @@ export default function VoltageCurrentGraph() {
     const rSquared = explainedVariation / totalVariation
 
     return { slope, intercept, rSquared }
-  }
+  }, [data])
 
   // Generate points for the best fit line
   const generateBestFitLine = () => {
@@ -76,7 +76,7 @@ export default function VoltageCurrentGraph() {
     setGradient(slope)
     setIntercept(intercept)
     setRSquared(rSquared)
-  }, [data])
+  }, [calculateLinearRegression])
 
   const bestFitLine = generateBestFitLine()
 
@@ -109,7 +109,7 @@ export default function VoltageCurrentGraph() {
               />
               <Tooltip
                 formatter={(value, name) => [
-                  `${value} ${name === "current" ? "A" : "V"}`,
+                  `${Number(value).toFixed(2)} ${name === "current" ? "A" : "V"}`,
                   name === "current" ? "Current" : "Voltage",
                 ]}
                 labelFormatter={() => ""}
