@@ -100,19 +100,6 @@ export default function VoltageCurrentGraph() {
     )
   }
 
-  // Custom tooltip content
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-white p-2 border border-gray-300 rounded shadow-sm">
-          <p className="font-medium">{`Voltage: ${payload[0].payload.voltage.toFixed(2)} V`}</p>
-          <p className="font-medium">{`Current: ${payload[0].payload.current.toFixed(2)} A`}</p>
-        </div>
-      )
-    }
-    return null
-  }
-
   return (
     <Card className="w-full">
       <CardHeader>
@@ -141,7 +128,16 @@ export default function VoltageCurrentGraph() {
                 domain={[0, "dataMax"]}
                 tickFormatter={(value) => value.toFixed(2)}
               />
-              <Tooltip content={<CustomTooltip />} />
+              <Tooltip
+                formatter={(value, name, props) => {
+                  if (name === "current") {
+                    return [`${Number(value).toFixed(2)} A`, "Current"]
+                  }
+                  return [`${Number(value).toFixed(2)} V`, "Voltage"]
+                }}
+                labelFormatter={() => ""}
+                cursor={{ strokeDasharray: "3 3" }}
+              />
               {/* Connected line through actual data points */}
               <Line
                 name="Data Line"
