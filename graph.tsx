@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { CartesianGrid, Line, ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis } from "recharts"
+import { CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function VoltageCurrentGraph() {
@@ -76,7 +76,7 @@ export default function VoltageCurrentGraph() {
     setGradient(slope)
     setIntercept(intercept)
     setRSquared(rSquared)
-  }, [])
+  }, [data])
 
   const bestFitLine = generateBestFitLine()
 
@@ -89,7 +89,7 @@ export default function VoltageCurrentGraph() {
       <CardContent>
         <div className="h-[400px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <ScatterChart margin={{ top: 20, right: 30, bottom: 60, left: 60 }}>
+            <ComposedChart margin={{ top: 20, right: 30, bottom: 60, left: 60 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis
                 type="number"
@@ -114,9 +114,20 @@ export default function VoltageCurrentGraph() {
                 ]}
                 labelFormatter={() => ""}
               />
-              <Scatter name="Data Points" data={data} fill="#8884d8" />
+              {/* Connected line through actual data points */}
+              <Line
+                name="Data Line"
+                type="monotone"
+                dataKey="current"
+                data={data}
+                stroke="#8884d8"
+                strokeWidth={2}
+                dot={{ fill: "#8884d8", r: 5 }}
+              />
+              {/* Best fit line */}
               {gradient !== null && intercept !== null && (
                 <Line
+                  name="Best Fit Line"
                   type="monotone"
                   dataKey="current"
                   data={bestFitLine}
@@ -125,15 +136,16 @@ export default function VoltageCurrentGraph() {
                   dot={false}
                   activeDot={false}
                   isAnimationActive={false}
+                  legendType="none"
                 />
               )}
-            </ScatterChart>
+            </ComposedChart>
           </ResponsiveContainer>
         </div>
 
-        <div className="mt-6 space-y-4">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <Card>
+        <div className="mt-8 space-y-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            <Card className="overflow-hidden">
               <CardHeader className="p-4">
                 <CardTitle className="text-lg">Gradient (Resistance)</CardTitle>
               </CardHeader>
@@ -145,7 +157,7 @@ export default function VoltageCurrentGraph() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="overflow-hidden">
               <CardHeader className="p-4">
                 <CardTitle className="text-lg">Y-Intercept</CardTitle>
               </CardHeader>
@@ -156,7 +168,7 @@ export default function VoltageCurrentGraph() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="overflow-hidden">
               <CardHeader className="p-4">
                 <CardTitle className="text-lg">R² Value</CardTitle>
               </CardHeader>
