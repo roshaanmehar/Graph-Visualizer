@@ -22,12 +22,6 @@ export default function VoltageCurrentGraph() {
     { voltage: 4.0, current: 95.66 },
   ]
 
-  // Add coordinate labels to data
-  const dataWithLabels = data.map((point) => ({
-    ...point,
-    label: `(${point.voltage.toFixed(1)}, ${point.current.toFixed(2)})`,
-  }))
-
   // Function to calculate linear regression
   const calculateLinearRegression = useCallback(() => {
     const n = data.length
@@ -106,6 +100,19 @@ export default function VoltageCurrentGraph() {
     )
   }
 
+  // Custom tooltip content
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-2 border border-gray-300 rounded shadow-sm">
+          <p className="font-medium">{`Voltage: ${payload[0].payload.voltage.toFixed(2)} V`}</p>
+          <p className="font-medium">{`Current: ${payload[0].payload.current.toFixed(2)} A`}</p>
+        </div>
+      )
+    }
+    return null
+  }
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -134,23 +141,17 @@ export default function VoltageCurrentGraph() {
                 domain={[0, "dataMax"]}
                 tickFormatter={(value) => value.toFixed(2)}
               />
-              <Tooltip
-                formatter={(value, name) => [
-                  `${Number(value).toFixed(2)} ${name === "current" ? "A" : "V"}`,
-                  name === "current" ? "Current" : "Voltage",
-                ]}
-                labelFormatter={() => ""}
-              />
+              <Tooltip content={<CustomTooltip />} />
               {/* Connected line through actual data points */}
               <Line
                 name="Data Line"
                 type="monotone"
                 dataKey="current"
-                data={dataWithLabels}
+                data={data}
                 stroke="#8884d8"
                 strokeWidth={2}
                 dot={<CustomDot />}
-                isAnimationActive={false}
+                activeDot={{ r: 8, fill: "#8884d8", stroke: "#fff" }}
               />
               {/* Best fit line */}
               {gradient !== null && intercept !== null && (
