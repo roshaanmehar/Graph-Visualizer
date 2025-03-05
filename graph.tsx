@@ -22,6 +22,12 @@ export default function VoltageCurrentGraph() {
     { voltage: 4.0, current: 95.66 },
   ]
 
+  // Add coordinate labels to data
+  const dataWithLabels = data.map((point) => ({
+    ...point,
+    label: `(${point.voltage.toFixed(1)}, ${point.current.toFixed(2)})`,
+  }))
+
   // Function to calculate linear regression
   const calculateLinearRegression = useCallback(() => {
     const n = data.length
@@ -56,7 +62,7 @@ export default function VoltageCurrentGraph() {
     const rSquared = explainedVariation / totalVariation
 
     return { slope, intercept, rSquared }
-  }, [data.length, data])
+  }, [data])
 
   // Generate points for the best fit line
   const generateBestFitLine = () => {
@@ -80,6 +86,20 @@ export default function VoltageCurrentGraph() {
 
   const bestFitLine = generateBestFitLine()
 
+  // Custom dot component with label
+  const CustomDot = (props: any) => {
+    const { cx, cy, payload } = props
+
+    return (
+      <g>
+        <circle cx={cx} cy={cy} r={5} fill="#8884d8" />
+        <text x={cx} y={cy - 10} textAnchor="middle" fill="#666" fontSize="11px" fontWeight="500">
+          {`(${payload.voltage.toFixed(1)}, ${payload.current.toFixed(2)})`}
+        </text>
+      </g>
+    )
+  }
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -87,9 +107,9 @@ export default function VoltageCurrentGraph() {
         <CardDescription>Plotting the relationship between voltage (V) and current (A)</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="h-[400px] w-full">
+        <div className="h-[450px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart margin={{ top: 20, right: 30, bottom: 60, left: 70 }}>
+            <ComposedChart margin={{ top: 30, right: 30, bottom: 60, left: 70 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis
                 type="number"
@@ -120,10 +140,11 @@ export default function VoltageCurrentGraph() {
                 name="Data Line"
                 type="monotone"
                 dataKey="current"
-                data={data}
+                data={dataWithLabels}
                 stroke="#8884d8"
                 strokeWidth={2}
-                dot={{ fill: "#8884d8", r: 5 }}
+                dot={<CustomDot />}
+                isAnimationActive={false}
               />
               {/* Best fit line */}
               {gradient !== null && intercept !== null && (
